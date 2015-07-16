@@ -15,7 +15,7 @@ var changedMetadata = false
 
 try {
   var config = require('./config')
-  
+
   if (!config.concurrent_downloads || !config.folder_path || !config.git_push || !config.all) {
     noConfig = true
   }
@@ -63,11 +63,11 @@ var getPageCountAndDownload = function () {
       })
     }, function (error, imageInfo) {
       var imagesToDownload = []
-      
+
       imageInfo.forEach(function (imageInfoList) {
         imagesToDownload = imagesToDownload.concat(imageInfoList)
       })
-      
+
       prepareToDownloadImages(imagesToDownload)
     })
   })
@@ -82,7 +82,7 @@ var getPageCount = function (callback) {
       var $ = cheerio.load(body)
       $('.pagination a').each(function (index, element) {
         var linkText = $(this).text()
-        
+
         if (!isNaN(parseInt(linkText)) && (parseInt(linkText) > highestPage)) {
           highestPage = parseInt(linkText)
         }
@@ -106,11 +106,11 @@ var imageAlreadyExists = function (imageMetadata) {
 
 var getImageInfo = function (page, callback) {
   var imageInfo = []
-  
+
   request(root_url + '&page=' + page, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       var $ = cheerio.load(body)
-      
+
       $('.photo-container').each(function (index, element) {
         var url = $(this).find('.photo a').attr('href')
         var post_url = 'https://unsplash.com' + url.replace('/download', '')
@@ -124,7 +124,7 @@ var getImageInfo = function (page, callback) {
         $(this).find('.epsilon a').each(function (index, element) {
           var linkText = $(this).text()
           var linkURL = $(this).attr('href')
-          
+
           if (linkText === 'Download') {
             imageMetadata.image_url = imageMetadata.image_url ? imageMetadata.image_url : linkURL
           } else {
@@ -175,7 +175,7 @@ var prepareToDownloadImages = function (imagesToDownload) {
 
     if (!imagesToDownload.length) {
       console.log('Nothing to download!')
- 
+
       if (check_for_deleted) {
         checkForDeletedImages()
       } else {
@@ -215,7 +215,7 @@ var downloadImages = function (imagesToDownload) {
   }, function (error) {
     console.log('Done!')
 
-    metadata.sort(function (a,b) { 
+    metadata.sort(function (a,b) {
       return a.id - b.id
     })
 
@@ -245,7 +245,7 @@ var checkForDeletedImages = function (didDownloadImages) {
         var filename = path.resolve(folder_path, image.filename)
 
         fs.unlink(filename, function (error) {
-          if (error) { 
+          if (error) {
             console.log('Error deleting %s!', filename)
           }
 
@@ -275,16 +275,16 @@ var postDownloadTasks = function () {
 
     if (config.create_zip) {
       console.log('Creating zip')
-      
+
       fs.unlink(config.create_zip, function (error) {
         var archive = archiver('zip')
         var output = fs.createWriteStream(config.create_zip)
 
         output.on('close', function () {
           console.log('Done creating zip, total size: %s bytes', pretty(archive.pointer()))
-          
+
           doGitPush()
-          
+
           if (!git_push) {
             runPostCommand()
           }
@@ -317,7 +317,7 @@ var downloadImage = function (the_metadata, callback) {
   var filename = String('0000' + the_metadata.id).slice(-4) + '_' + the_metadata.unsplash_id + '.jpeg'
   the_metadata.filename = filename
   var file = fs.createWriteStream(path.resolve(folder_path, filename))
- 
+
   var deleted = false
 
   file.on('finish', function () {
@@ -351,7 +351,7 @@ var doGitPush = function () {
   }
 }
 
-var runPostCommand = function () {    
+var runPostCommand = function () {
   if (config.post_command) {
     console.log('Executing post_command')
     exec(config.post_command, function (error, stdout, stderr) {
